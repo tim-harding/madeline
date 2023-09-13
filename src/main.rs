@@ -1,3 +1,5 @@
+use std::ops::{Add, Sub};
+
 use wgpu::util::DeviceExt;
 use winit::{
     event::*,
@@ -9,6 +11,28 @@ use winit::{
 pub struct Vec2<T> {
     pub x: T,
     pub y: T,
+}
+
+impl<T> Add<Vec2<T>> for Vec2<T>
+where
+    T: Add<Output = T>,
+{
+    type Output = Self;
+
+    fn add(self, rhs: Vec2<T>) -> Self::Output {
+        Self::new(self.x + rhs.x, self.y + rhs.y)
+    }
+}
+
+impl<T> Sub<Vec2<T>> for Vec2<T>
+where
+    T: Sub<Output = T>,
+{
+    type Output = Self;
+
+    fn sub(self, rhs: Vec2<T>) -> Self::Output {
+        Self::new(self.x - rhs.x, self.y - rhs.y)
+    }
 }
 
 impl<T> Vec2<T> {
@@ -25,7 +49,6 @@ pub struct State {
     render_pipeline: wgpu::RenderPipeline,
     vertex_buffer: wgpu::Buffer,
     index_buffer: wgpu::Buffer,
-    msaa_texture: MsaaTexture,
     size: Vec2<u32>,
     pub scale: f64,
 }
@@ -121,7 +144,7 @@ impl State {
             },
             depth_stencil: None,
             multisample: wgpu::MultisampleState {
-                count: 4,
+                count: 1,
                 mask: !0,
                 alpha_to_coverage_enabled: false,
             },
@@ -140,7 +163,6 @@ impl State {
         });
 
         Self {
-            msaa_texture: MsaaTexture::new(&device, size),
             surface,
             device,
             queue,
@@ -163,7 +185,6 @@ impl State {
             self.config.width = size.x;
             self.config.height = size.y;
             self.surface.configure(&self.device, &self.config);
-            self.msaa_texture = MsaaTexture::new(&self.device, size);
         }
     }
 
@@ -182,8 +203,8 @@ impl State {
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("Render Pass"),
                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                    view: &self.msaa_texture.view,
-                    resolve_target: Some(&output_view),
+                    view: &output_view,
+                    resolve_target: None,
                     ops: wgpu::Operations {
                         load: wgpu::LoadOp::Clear(wgpu::Color {
                             r: 0.1,
@@ -287,6 +308,30 @@ impl Vertex {
     }
 }
 
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+struct Draw {
+    vertices: Vec<Vertex>,
+    indices: Vec<u16>,
+}
+
+impl Draw {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn clear(&mut self) {
+        self.vertices.clear();
+        self.indices.clear();
+    }
+
+    pub fn draw_rectangle(&mut self, position: Vec2<f32>, size: Vec2<f32>) {
+        let base_vertex = self.vertices.len();
+        self.vertices.push(Vertex {
+            position: 
+        })
+    }
+}
+
 const VERTICES: &[Vertex] = &[
     Vertex {
         position: [-0.0868241, 0.49240386, 0.0],
@@ -311,37 +356,3 @@ const VERTICES: &[Vertex] = &[
 ];
 
 const INDICES: &[u16] = &[0, 1, 4, 1, 2, 4, 2, 3, 4];
-
-struct MsaaTexture {
-    pub view: wgpu::TextureView,
-}
-
-impl MsaaTexture {
-    pub fn new(device: &wgpu::Device, size: Vec2<u32>) -> Self {
-        let texture = device.create_texture(&wgpu::TextureDescriptor {
-            label: None,
-            size: wgpu::Extent3d {
-                width: size.x,
-                height: size.y,
-                depth_or_array_layers: 1,
-            },
-            mip_level_count: 1,
-            sample_count: 4,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Bgra8UnormSrgb,
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-            view_formats: &[],
-        });
-        let view = texture.create_view(&wgpu::TextureViewDescriptor {
-            label: None,
-            format: Some(wgpu::TextureFormat::Bgra8UnormSrgb),
-            dimension: Some(wgpu::TextureViewDimension::D2),
-            aspect: wgpu::TextureAspect::All,
-            base_mip_level: 0,
-            mip_level_count: None,
-            base_array_layer: 0,
-            array_layer_count: None,
-        });
-        Self { view }
-    }
-}
