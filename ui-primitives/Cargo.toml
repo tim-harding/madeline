@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 wgpu = "0.17.0"
+raw-window-handle = "0.5.2"
