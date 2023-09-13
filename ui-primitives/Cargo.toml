@@ -1,8 +1,0 @@
-[package]
-name = "ui-primitives"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-wgpu = "0.17.0"
-raw-window-handle = "0.5.2"

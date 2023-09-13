@@ -693,7 +693,8 @@ version = "0.1.0"
 dependencies = [
  "env_logger",
  "pollster",
- "ui-primitives",
+ "raw-window-handle",
+ "wgpu",
  "winit",
 ]
 
@@ -1346,14 +1347,6 @@ name = "ttf-parser"
 version = "0.19.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a464a4b34948a5f67fddd2b823c62d9d92e44be75058b99939eae6c5b6960b33"
-
-[[package]]
-name = "ui-primitives"
-version = "0.1.0"
-dependencies = [
- "raw-window-handle",
- "wgpu",
-]
 
 [[package]]
 name = "unicode-ident"
