@@ -4,9 +4,4 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-env_logger = "0.10"
-winit = "0.28"
-pollster = "0.3"
-wgpu = "0.17.0"
-raw-window-handle = "0.5.2"
-bytemuck = { version = "1.12", features = [ "derive" ] }
+cranelift = "0.100.0"
