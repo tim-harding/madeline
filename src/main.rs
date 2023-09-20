@@ -1,3 +1,4 @@
+mod dag;
 mod frontend;
 mod jit;
 
