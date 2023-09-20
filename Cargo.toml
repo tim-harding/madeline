@@ -5,3 +5,7 @@ edition = "2021"
 
 [dependencies]
 cranelift = "0.100.0"
+cranelift-module = "0.100.0"
+cranelift-jit = "0.100.0"
+cranelift-native = "0.100.0"
+peg = "*"
