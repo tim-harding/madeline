@@ -1,13 +1,23 @@
+use crate::vec2::Vec2;
 use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct Node {
     pub kind: NodeKind,
+    pub position: Vec2<i32>,
 }
 
 impl Node {
     pub fn with_kind(kind: NodeKind) -> Self {
-        Self { kind }
+        Self {
+            kind,
+            ..Default::default()
+        }
+    }
+
+    pub fn positioned(mut self, position: Vec2<i32>) -> Self {
+        self.position = position;
+        self
     }
 
     pub fn inputs(&self) -> InputIterator {
@@ -85,7 +95,7 @@ impl Dag {
         }
     }
 
-    pub fn add_vertex(&mut self, node: Node) -> u32 {
+    pub fn add_node(&mut self, node: Node) -> u32 {
         let id = self.next_node;
         self.next_node += 1;
         self.nodes.insert(id, node);
@@ -201,9 +211,9 @@ mod tests {
     #[test]
     fn identifies_cycle() {
         let mut dag = Dag::new();
-        let a = dag.add_vertex(Node::default());
-        let b = dag.add_vertex(Node::default());
-        let c = dag.add_vertex(Node::default());
+        let a = dag.add_node(Node::default());
+        let b = dag.add_node(Node::default());
+        let c = dag.add_node(Node::default());
         assert_eq!(dag.add_input(a, b, 0), Ok(()));
         assert_eq!(dag.add_input(b, c, 0), Ok(()));
         assert_eq!(dag.add_input(c, a, 0), Err(EdgeError::CreatesCycle));
