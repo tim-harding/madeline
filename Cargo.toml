@@ -8,7 +8,4 @@ cranelift = "0.100.0"
 cranelift-module = "0.100.0"
 cranelift-jit = "0.100.0"
 cranelift-native = "0.100.0"
-peg = "*"
 thiserror = "1.0.48"
-rawloader = "0.37.1"
-iced = { version = "0.10.0", features = ["canvas"] }
