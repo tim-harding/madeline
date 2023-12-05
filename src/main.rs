@@ -26,6 +26,8 @@ pub fn main() {
                 use winit::event::WindowEvent::*;
                 match event {
                     CloseRequested => window_target.exit(),
+                    Resized(size) => state.resize(size),
+                    RedrawRequested => state.render(),
                     _ => {}
                 }
             }
