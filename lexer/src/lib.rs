@@ -18,6 +18,8 @@ pub enum TokenKind {
 pub struct IdentifierId(pub u32);
 
 pub struct Lexer<'a> {
+    line: u32,
+    column: u32,
     s: &'a str,
     iter: Peekable<CharIndices<'a>>,
     identifiers: HashMap<String, IdentifierId>,
@@ -29,6 +31,8 @@ impl<'a> Lexer<'a> {
             iter: s.char_indices().peekable(),
             s,
             identifiers: HashMap::new(),
+            line: 0,
+            column: 0,
         }
     }
 
@@ -40,7 +44,11 @@ impl<'a> Lexer<'a> {
         let kind = match next.1 {
             '(' => Ok(TokenKind::ParenLeft),
             ')' => Ok(TokenKind::ParenRight),
-            c => Err(Error::Unexpected(c)),
+            c => Err(Error {
+                line: self.line,
+                column: self.column,
+                c,
+            }),
         }?;
         Ok(Some(Token {
             start: next.0.try_into().unwrap(),
@@ -49,6 +57,7 @@ impl<'a> Lexer<'a> {
     }
 
     fn take(&mut self) -> Option<(usize, char)> {
+        self.column += 1;
         self.iter.next()
     }
 
@@ -59,6 +68,11 @@ impl<'a> Lexer<'a> {
     fn take_whitespace(&mut self) {
         loop {
             match self.peek() {
+                Some((_, '\n')) => {
+                    self.take();
+                    self.line += 1;
+                    self.column = 0;
+                }
                 Some((_, c)) if c.is_whitespace() => {
                     self.take();
                 }
@@ -69,9 +83,11 @@ impl<'a> Lexer<'a> {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
-pub enum Error {
-    #[error("Unexpected {0} while lexing")]
-    Unexpected(char),
+#[error("Unexpected {c} at {line}:{column}")]
+pub struct Error {
+    line: u32,
+    column: u32,
+    c: char,
 }
 
 #[cfg(test)]
