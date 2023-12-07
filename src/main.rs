@@ -1,11 +1,11 @@
 mod dag;
+mod drawing;
 mod jit;
-mod state;
 mod ui_primitives;
 mod util;
 
+use drawing::State;
 use flexi_logger::Logger;
-use state::State;
 use winit::{
     event_loop::{ControlFlow, EventLoop},
     window::WindowBuilder,
