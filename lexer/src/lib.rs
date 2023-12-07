@@ -15,6 +15,7 @@ pub enum TokenKind {
     Ident(Id),
     ParenLeft,
     ParenRight,
+    Fn,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -74,9 +75,14 @@ impl<'a> Lexer<'a> {
                 None => &s[start..],
             };
             let s = unsafe { from_utf8_unchecked(s) };
-            let ident = Id(self.identifiers.len().try_into().unwrap());
-            let ident = *self.identifiers.entry(s).or_insert(ident);
-            break TokenKind::Ident(ident);
+            return match s {
+                "fn" => TokenKind::Fn,
+                s => {
+                    let ident = Id(self.identifiers.len().try_into().unwrap());
+                    let ident = *self.identifiers.entry(s).or_insert(ident);
+                    TokenKind::Ident(ident)
+                }
+            };
         }
     }
 
@@ -150,7 +156,7 @@ mod tests {
     }
 
     #[test]
-    fn idents() {
-        assert_tokens_match(" hi hello ", [Ident(Id(0)), Ident(Id(1))])
+    fn words() {
+        assert_tokens_match(" hi hello fn ", [Ident(Id(0)), Ident(Id(1)), Fn])
     }
 }
