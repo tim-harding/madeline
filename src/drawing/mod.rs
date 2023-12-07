@@ -1,5 +1,3 @@
-mod pipelines;
-
 use winit::window::Window;
 
 pub struct State {
@@ -9,7 +7,6 @@ pub struct State {
     config: wgpu::SurfaceConfiguration,
     size: winit::dpi::PhysicalSize<u32>,
     window: Window,
-    pipelines: Pipelines,
 }
 
 impl State {
@@ -140,8 +137,4 @@ impl State {
 
         Ok(())
     }
-}
-
-struct Pipelines {
-    rect: pipelines::rect::Pipeline,
 }

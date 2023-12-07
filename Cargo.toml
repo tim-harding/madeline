@@ -12,7 +12,8 @@ log = "0.4.20"
 thiserror = "1.0.48"
 wgpu = "0.18.0"
 pollster = "0.3"
-glam = "0.24.2"
+egui = "0.24.1"
+egui-wgpu = "0.24.1"
 
 [dependencies.bytemuck]
 version = "1.14.0"

@@ -1,8 +1,6 @@
 mod dag;
 mod drawing;
 mod jit;
-mod ui_primitives;
-mod util;
 
 use drawing::State;
 use flexi_logger::Logger;

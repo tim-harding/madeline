@@ -1,10 +1,15 @@
-use glam::IVec2;
 use std::collections::{HashMap, HashSet};
+
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct V2 {
+    pub x: i32,
+    pub y: i32,
+}
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct Node {
     pub kind: NodeKind,
-    pub position: IVec2,
+    pub position: V2,
 }
 
 impl Node {
@@ -15,7 +20,7 @@ impl Node {
         }
     }
 
-    pub fn positioned(mut self, position: IVec2) -> Self {
+    pub fn positioned(mut self, position: V2) -> Self {
         self.position = position;
         self
     }
