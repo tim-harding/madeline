@@ -1,9 +1,11 @@
-use crate::{color::Color, vec2::Vec2};
+use glam::{Vec2, Vec3};
 
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Rect {
-    pub position: Vec2<f32>,
-    pub size: Vec2<f32>,
+    pub position: Vec3,
+    pub size: Vec2,
     pub corner_radius: f32,
-    pub solid_color: Color,
-    pub border_color: Color,
+    pub border_width: f32,
+    pub solid_color: Vec3,
+    pub border_color: Vec3,
 }

@@ -1,9 +1,8 @@
-mod color;
 mod dag;
 mod jit;
 mod state;
 mod ui_primitives;
-mod vec2;
+mod util;
 
 use flexi_logger::Logger;
 use state::State;

@@ -1,10 +1,10 @@
-use crate::vec2::Vec2;
+use glam::IVec2;
 use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct Node {
     pub kind: NodeKind,
-    pub position: Vec2<i32>,
+    pub position: IVec2,
 }
 
 impl Node {
@@ -15,7 +15,7 @@ impl Node {
         }
     }
 
-    pub fn positioned(mut self, position: Vec2<i32>) -> Self {
+    pub fn positioned(mut self, position: IVec2) -> Self {
         self.position = position;
         self
     }
