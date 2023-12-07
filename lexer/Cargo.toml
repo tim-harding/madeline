@@ -1,0 +1,29 @@
+[package]
+name = "madeline"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+cranelift = "0.100.0"
+cranelift-module = "0.100.0"
+cranelift-jit = "0.100.0"
+cranelift-native = "0.100.0"
+log = "0.4.20"
+thiserror = "1.0.48"
+wgpu = "0.18.0"
+pollster = "0.3"
+egui = "0.24.1"
+egui-wgpu = "0.24.1"
+
+[dependencies.bytemuck]
+version = "1.14.0"
+features = ["derive"]
+
+[dependencies.winit]
+version = "0.29.4"
+features = ["rwh_05"]
+
+[dependencies.flexi_logger]
+version = "0.27.3"
+default-features = false 
+features = ["colors"]
