@@ -1,39 +1,43 @@
 use std::{
     collections::HashMap,
     iter::Peekable,
+    num::{ParseFloatError, ParseIntError},
     str::{from_utf8_unchecked, CharIndices},
 };
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Token {
-    start: u32,
-    kind: TokenKind,
+    pub start: u32,
+    pub kind: TokenKind,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum TokenKind {
     Ident(Id),
+    Float(f32),
     ParenLeft,
     ParenRight,
     Fn,
+    Plus,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Id(pub u32);
 
 pub struct Lexer<'a> {
-    line: u32,
-    column: u32,
-    s: &'a str,
+    pub line: u32,
+    pub column: u32,
+    input: &'a [u8],
     iter: Peekable<CharIndices<'a>>,
     identifiers: HashMap<&'a str, Id>,
 }
 
 impl<'a> Lexer<'a> {
+    // TODO: Take byte slice instead to avoid a second pass
     pub fn new(s: &'a str) -> Self {
         Self {
             iter: s.char_indices().peekable(),
-            s,
+            input: s.as_bytes(),
             identifiers: HashMap::new(),
             line: 1,
             column: 1,
@@ -48,13 +52,10 @@ impl<'a> Lexer<'a> {
         let kind = match c {
             '(' => TokenKind::ParenLeft,
             ')' => TokenKind::ParenRight,
+            '+' => TokenKind::Plus,
             '_' | 'a'..='z' | 'A'..='Z' => self.word(start),
             c => {
-                return Err(Error {
-                    line: self.line,
-                    column: self.column,
-                    c,
-                })
+                return Err(self.error(ErrorKind::TokenStart(c)));
             }
         };
         Ok(Some(Token {
@@ -63,16 +64,36 @@ impl<'a> Lexer<'a> {
         }))
     }
 
-    fn word(&mut self, start: usize) -> TokenKind {
+    fn float(&mut self, start: usize) -> Result<TokenKind, Error> {
+        // TODO: Support underscores
+        // TODO: Support signed ints
+        // TODO: Support floats
         loop {
-            let s = self.s.as_bytes();
             let s = match self.peek() {
-                Some((_, '_' | 'a'..='z' | 'A'..='Z')) => {
+                Some((_, '0'..='9')) => {
                     self.take();
                     continue;
                 }
-                Some((end, _)) => &s[start..end],
-                None => &s[start..],
+                Some((end, _)) => &self.input[start..end],
+                None => &self.input[start..],
+            };
+            let s = unsafe { from_utf8_unchecked(s) };
+            return Ok(TokenKind::Float(
+                s.parse()
+                    .map_err(|e: ParseFloatError| self.error(e.into()))?,
+            ));
+        }
+    }
+
+    fn word(&mut self, start: usize) -> TokenKind {
+        loop {
+            let s = match self.peek() {
+                Some((_, '_' | 'a'..='z' | 'A'..='Z' | '0'..='9')) => {
+                    self.take();
+                    continue;
+                }
+                Some((end, _)) => &self.input[start..end],
+                None => &self.input[start..],
             };
             let s = unsafe { from_utf8_unchecked(s) };
             return match s {
@@ -83,6 +104,14 @@ impl<'a> Lexer<'a> {
                     TokenKind::Ident(ident)
                 }
             };
+        }
+    }
+
+    fn error(&self, kind: ErrorKind) -> Error {
+        Error {
+            line: self.line,
+            column: self.column,
+            kind,
         }
     }
 
@@ -118,18 +147,31 @@ impl<'a> Lexer<'a> {
 pub unsafe fn token_line_and_column(s: &str, token_start: usize) -> (u32, u32) {
     let s = &s.as_bytes()[..token_start];
     let s = unsafe { from_utf8_unchecked(s) };
+    last_line_and_column(s)
+}
+
+pub fn last_line_and_column(s: &str) -> (u32, u32) {
     s.chars().fold((1, 1), |(line, column), c| match c {
         '\n' => (line + 1, 1),
         _ => (line, column + 1),
     })
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
-#[error("Unexpected {c} at {line}:{column}")]
+#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
+#[error("Lexer error at {line}:{column}:\n{kind}")]
 pub struct Error {
-    line: u32,
-    column: u32,
-    c: char,
+    pub line: u32,
+    pub column: u32,
+    pub kind: ErrorKind,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
+#[error("Unexpected {c} at {line}:{column}")]
+pub enum ErrorKind {
+    #[error("Unexpected {0} where a token was expected to start")]
+    TokenStart(char),
+    #[error("Failed to parse numeric literal as u64:\n{0}")]
+    Float(#[from] ParseFloatError),
 }
 
 #[cfg(test)]
