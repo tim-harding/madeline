@@ -1,24 +1,29 @@
 use std::{
     collections::HashMap,
     iter::Peekable,
-    num::{ParseFloatError, ParseIntError},
     str::{from_utf8_unchecked, CharIndices},
 };
 
+// TODO: SOA
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Token {
-    pub start: u32,
     pub kind: TokenKind,
+    pub start: u32,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum TokenKind {
-    Ident(Id),
-    Float(f32),
+    Eof,
+    Ident,
+    Float,
     ParenLeft,
     ParenRight,
     Fn,
     Plus,
+    Minus,
+    Asterisk,
+    Slash,
+    Exclamation,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -53,7 +58,11 @@ impl<'a> Lexer<'a> {
             '(' => TokenKind::ParenLeft,
             ')' => TokenKind::ParenRight,
             '+' => TokenKind::Plus,
-            '_' | 'a'..='z' | 'A'..='Z' => self.word(start),
+            '-' => TokenKind::Minus,
+            '*' => TokenKind::Asterisk,
+            '/' => TokenKind::Slash,
+            '!' => TokenKind::Exclamation,
+            '_' | 'a'..='z' | 'A'..='Z' => self.ident_or_keyword(start),
             c => {
                 return Err(self.error(ErrorKind::TokenStart(c)));
             }
@@ -64,46 +73,36 @@ impl<'a> Lexer<'a> {
         }))
     }
 
-    fn float(&mut self, start: usize) -> Result<TokenKind, Error> {
+    fn float(&mut self) -> Result<TokenKind, Error> {
         // TODO: Support underscores
         // TODO: Support signed ints
         // TODO: Support floats
         loop {
-            let s = match self.peek() {
+            match self.peek() {
                 Some((_, '0'..='9')) => {
                     self.take();
                     continue;
                 }
-                Some((end, _)) => &self.input[start..end],
-                None => &self.input[start..],
+                _ => break,
             };
-            let s = unsafe { from_utf8_unchecked(s) };
-            return Ok(TokenKind::Float(
-                s.parse()
-                    .map_err(|e: ParseFloatError| self.error(e.into()))?,
-            ));
         }
+        Ok(TokenKind::Float)
     }
 
-    fn word(&mut self, start: usize) -> TokenKind {
-        loop {
-            let s = match self.peek() {
+    fn ident_or_keyword(&mut self, start: usize) -> TokenKind {
+        let s = loop {
+            match self.peek() {
                 Some((_, '_' | 'a'..='z' | 'A'..='Z' | '0'..='9')) => {
                     self.take();
                     continue;
                 }
-                Some((end, _)) => &self.input[start..end],
-                None => &self.input[start..],
-            };
-            let s = unsafe { from_utf8_unchecked(s) };
-            return match s {
-                "fn" => TokenKind::Fn,
-                s => {
-                    let ident = Id(self.identifiers.len().try_into().unwrap());
-                    let ident = *self.identifiers.entry(s).or_insert(ident);
-                    TokenKind::Ident(ident)
-                }
-            };
+                Some((end, _)) => break &self.input[start..end],
+                None => break &self.input[start..],
+            }
+        };
+        match unsafe { from_utf8_unchecked(s) } {
+            "fn" => TokenKind::Fn,
+            _ => TokenKind::Ident,
         }
     }
 
@@ -141,6 +140,8 @@ impl<'a> Lexer<'a> {
     }
 }
 
+// TODO: Store line starts to accelerate file position lookups
+
 /// Gets the line and column number of the token at the given byte offset.
 ///
 /// SAFETY: token_start must index the start of a UTF-8 char
@@ -170,8 +171,6 @@ pub struct Error {
 pub enum ErrorKind {
     #[error("Unexpected {0} where a token was expected to start")]
     TokenStart(char),
-    #[error("Failed to parse numeric literal as u64:\n{0}")]
-    Float(#[from] ParseFloatError),
 }
 
 #[cfg(test)]
@@ -199,6 +198,6 @@ mod tests {
 
     #[test]
     fn words() {
-        assert_tokens_match(" hi hello fn ", [Ident(Id(0)), Ident(Id(1)), Fn])
+        assert_tokens_match(" hi hello fn ", [Ident, Ident, Fn])
     }
 }
