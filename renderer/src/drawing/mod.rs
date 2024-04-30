@@ -6,7 +6,6 @@ pub struct State {
     queue: wgpu::Queue,
     config: wgpu::SurfaceConfiguration,
     size: winit::dpi::PhysicalSize<u32>,
-    window: Window,
 }
 
 impl State {
@@ -67,7 +66,6 @@ impl State {
         surface.configure(&device, &config);
 
         Self {
-            window,
             surface,
             device,
             queue,

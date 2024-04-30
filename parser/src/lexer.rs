@@ -68,7 +68,7 @@ impl<'a> Lexer<'a> {
             }
         };
         Ok(Some(Token {
-            start: c.try_into().unwrap(),
+            start: c.into(),
             kind,
         }))
     }

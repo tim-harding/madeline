@@ -1,6 +1,4 @@
-mod dag;
 mod drawing;
-mod jit;
 
 use drawing::State;
 use flexi_logger::Logger;
@@ -18,20 +16,18 @@ pub fn main() {
     event_loop
         .run(move |event, window_target| {
             use winit::event::Event::*;
-            match event {
-                WindowEvent {
-                    window_id: _,
-                    event,
-                } => {
-                    use winit::event::WindowEvent::*;
-                    match event {
-                        CloseRequested => window_target.exit(),
-                        Resized(size) => state.resize(size),
-                        RedrawRequested => state.render(),
-                        _ => {}
-                    }
+            if let WindowEvent {
+                window_id: _,
+                event,
+            } = event
+            {
+                use winit::event::WindowEvent::*;
+                match event {
+                    CloseRequested => window_target.exit(),
+                    Resized(size) => state.resize(size),
+                    RedrawRequested => state.render(),
+                    _ => {}
                 }
-                _ => {}
             }
         })
         .unwrap();

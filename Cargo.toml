@@ -1,5 +1,8 @@
 [workspace]
 members = [
-    "parser"
+    "parser",
+    "renderer",
+    "jit",
 ]
+
 resolver = "2"

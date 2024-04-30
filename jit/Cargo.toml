@@ -1,5 +1,5 @@
 [package]
-name = "madeline"
+name = "madeline-jit"
 version = "0.1.0"
 edition = "2021"
 
