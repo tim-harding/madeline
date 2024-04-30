@@ -21,11 +21,10 @@ impl State {
 
         let adapter = instance
             .enumerate_adapters(wgpu::Backends::all())
-            .filter(|adapter| {
+            .find(|adapter| {
                 // Check if this adapter supports our surface
                 adapter.is_surface_supported(&surface)
             })
-            .next()
             .unwrap();
 
         let (device, queue) = adapter
@@ -51,8 +50,7 @@ impl State {
             .formats
             .iter()
             .copied()
-            .filter(|f| f.is_srgb())
-            .next()
+            .find(|f| f.is_srgb())
             .unwrap_or(surface_caps.formats[0]);
         let config = wgpu::SurfaceConfiguration {
             usage: wgpu::TextureUsages::RENDER_ATTACHMENT,

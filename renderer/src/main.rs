@@ -1,4 +1,5 @@
 mod drawing;
+mod util;
 
 use drawing::State;
 use flexi_logger::Logger;
